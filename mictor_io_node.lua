@@ -6,6 +6,8 @@ waiting_mode = 'go_away'
 distance = 0
 avg_distance = 0
 start_time = tmr.now()
+too_far = false
+too_far_counter = 0
 
 sonar = hcsr04.init(pin_sonar_trigger, pin_sonar_echo)
 tmr.alarm(1, 1000, 1, function()
@@ -46,10 +48,12 @@ m:on("message", function(client, topic, data)
     for key, value in pairs(json) do
       if key == 'status' then
         waiting_mode = value
-        if waiting_mode == 'piss_here' then
-          led.set(waiting_piss_color)
-        else
-          led.set(waiting_stop_color)
+        if pissing == false then
+          if waiting_mode == 'piss_here' then
+            led.set(waiting_piss_color)
+          else
+            led.set(waiting_stop_color)
+          end
         end
       end
     end
@@ -68,6 +72,16 @@ end
 connect()
 tmr.alarm(2, 1000, 1, function()
   if mqtt_connected then
+    -- Small snippet for handling with -1 distance values
+    if distance == -1 then
+      too_far_counter = too_far_counter + 1
+      if too_far_counter == 3 then
+        too_far = true
+      end
+    else
+      too_far_counter = 0
+      too_far = false
+    end
     -- If someone steps into the urinol
     if distance < distance_threshold and distance > 0 and pissing == false then
       pissing = true
@@ -85,7 +99,7 @@ tmr.alarm(2, 1000, 1, function()
     elseif distance < distance_threshold and distance > 0 and pissing == true then
       avg_distance = (avg_distance+distance)/2.0
     -- If that person walks away from the urinol
-    elseif distance > distance_threshold and pissing == true then
+    elseif (distance > distance_threshold or too_far) and pissing == true then
       time = (tmr.now() - start_time)/1000000.0
       json = string.format('{"frame_id": "%s", "data": {"distance": %f, "time_elapsed": %f}}', frame_id, avg_distance, time)
       sendMessage(mqtt_end_topic, json)
