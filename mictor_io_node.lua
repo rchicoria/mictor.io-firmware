@@ -15,6 +15,10 @@ tmr.alarm(1, 1000, 1, function()
   print("[mictor.io][HC-SR04] Distance "..distance)
 end)
 
+function battery()
+  return adc.read(0)/1024.0*100.0
+end
+
 -- Connect to mqtt broker
 function connect()
   print("[mictor.io][MQTT] Connecting to MQTT...")
@@ -96,7 +100,7 @@ tmr.alarm(2, 1000, 1, function()
       led.set(pissing_color)
       avg_distance = distance
       start_time = tmr.now()
-      json = string.format('{"frame_id": "%s", "data": {"waiting_for_piss": ', frame_id)
+      json = string.format('{"frame_id": "%s", "battery": %f, "data": {"waiting_for_piss": ', frame_id, battery())
       if waiting_mode == 'piss_here' then
         json = json..'true}}'
       else
@@ -109,7 +113,7 @@ tmr.alarm(2, 1000, 1, function()
     -- If that person walks away from the urinol
     elseif (distance > distance_threshold or too_far) and pissing == true then
       time = (tmr.now() - start_time)/1000000.0
-      json = string.format('{"frame_id": "%s", "data": {"distance": %f, "time_elapsed": %f}}', frame_id, avg_distance, time)
+      json = string.format('{"frame_id": "%s", "battery": %f, "data": {"distance": %f, "time_elapsed": %f}}', frame_id, battery(), avg_distance, time)
       sendMessage(mqtt_end_topic, json)
       pissing = false
       if waiting_mode == 'piss_here' then
