@@ -55,6 +55,8 @@ m:on("message", function(client, topic, data)
             led.set(waiting_stop_color)
           end
         end
+      elseif key == 'distance_threshold' then
+        distance_threshold = value
       end
     end
   end
