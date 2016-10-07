@@ -20,6 +20,8 @@ mictor.io is a cloud based platform for managing public urinals usage. Based on 
   * HCSR04 Ultrasonic Raging Sensor
   * RGB LED
 
+Each node is powered by 4x AA batteries. A 5V regulator is used to power the HCSR04 whereas a 3.3V regulator is used for the ESP.
+
 ### Loading the Firmware
 
 Start by flashing the NodeMCU into the ESP8266 using esptool:
@@ -30,10 +32,7 @@ python esptool.py --port /dev/tty.USB0 write_flash 0x00000 nodemcu_float_0.9.6-d
 '''
 
 The firmware can be sent over to the ESP using a tool such as ESPlorer [4]
-
-### Protocol
-
-
+The HCSR04 library for the ESP was downloaded from https://github.com/sza2/node_hcsr04
 
 ## More
 
