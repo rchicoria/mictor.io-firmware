@@ -37,7 +37,13 @@ m:on("offline", function(client)
   led.set(waiting_mqtt_color)
   print("[mictor.io][MQTT] Offline, reconnecting...")
   mqtt_connected = false
-  connect()
+  if wifi.sta.status()~=5 then
+    led.set(waiting_wifi_color)
+    print("[mictor.io][WiFi] Offline, reconnecting...")
+    ESP.reset()
+  else
+    connect()
+  end
 end)
 
 -- On message from mqtt
